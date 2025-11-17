@@ -83,13 +83,46 @@ npx http-server -p 8000
 
 ```
 tm-pose-template/
-├── index.html          # 메인 웹 페이지
-├── my_model/           # Teachable Machine 모델 파일 위치
-│   ├── model.json
-│   ├── weights.bin
-│   └── metadata.json
+├── index.html              # 화면 구조와 JS/CSS를 불러오는 앱의 엔트리 HTML
+├── css/
+│   └── style.css          # 페이지 전체 스타일과 게임 UI 디자인
+├── js/
+│   ├── main.js            # 포즈 인식과 게임 로직을 초기화하고 서로 연결하는 진입점
+│   ├── poseEngine.js      # 웹캠 + TM 포즈 모델 로딩 및 예측(label) 생성 담당
+│   ├── gameEngine.js      # 게임 단계, 명령, 점수, 제한시간 등 게임 규칙 전체를 담당
+│   └── stabilizer.js      # 예측값을 안정화(히스테리시스/필터링)해 튀는 오류를 줄임
+├── my_model/              # Teachable Machine 모델 파일 위치
+│   ├── model.json         # TM에서 학습한 포즈 모델의 구조(네트워크 아키텍처) 정보
+│   ├── metadata.json      # 클래스 이름 등 모델 메타데이터 정보
+│   └── weights.bin        # 포즈 모델이 학습한 실제 가중치 데이터
 └── README.md
 ```
+
+### 모듈 설명
+
+#### `js/main.js`
+- 애플리케이션의 진입점
+- PoseEngine, GameEngine, Stabilizer를 초기화하고 연결
+- 웹캠과 캔버스 설정
+- UI 이벤트 처리 (Start/Stop 버튼)
+
+#### `js/poseEngine.js`
+- Teachable Machine 포즈 모델 로드
+- 웹캠 스트림 관리
+- 실시간 포즈 예측 수행
+- 포즈 스켈레톤 및 키포인트 그리기
+
+#### `js/gameEngine.js`
+- 게임 로직 관리 (선택적 기능)
+- 점수, 레벨, 타이머 관리
+- 게임 명령 발급 및 검증
+- 향후 게임 확장을 위한 기반 제공
+
+#### `js/stabilizer.js`
+- 예측 결과 안정화
+- 히스테리시스 필터링으로 순간적인 오인식 방지
+- 예측 확률 임계값 처리
+- 최빈값 기반 평활화
 
 ## 🎓 교육 활용
 
