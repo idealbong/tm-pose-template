@@ -201,6 +201,19 @@ tm-pose-template/
    └── weights.bin
    ```
 
+7. **⚠️ metadata.json 클래스 라벨 확인 (중요!)**
+   - `my_model/metadata.json` 파일을 열어서 학습된 클래스 라벨 확인
+   - 파일 내용 예시:
+   ```json
+   {
+     "labels": ["왼쪽", "오른쪽", "정면", "위", "아래"],
+     ...
+   }
+   ```
+   - **이 라벨 정보를 기준으로 게임 코드를 작성해야 합니다!**
+   - GAME_RULE.md의 "필요한 포즈 목록"과 일치하는지 확인
+   - 불일치하면 게임이 제대로 작동하지 않을 수 있음
+
 > 💡 **Tip**: GAME_RULE.md에 정의한 포즈 목록을 보면서 학습하면 누락 없이 모든 포즈를 학습할 수 있습니다!
 
 ### Step 3: 게임 로직 구현
@@ -211,19 +224,48 @@ tm-pose-template/
 
 Claude Code, Cursor, GitHub Copilot 등의 AI 도구를 사용하면 쉽게 구현할 수 있습니다:
 
+**Step 3-1: metadata.json 라벨 확인**
+
+먼저 `my_model/metadata.json` 파일을 열어 실제 라벨을 확인합니다:
+```json
+{
+  "labels": ["왼쪽", "오른쪽", "정면", "위", "아래"],
+  ...
+}
+```
+
+**Step 3-2: 라벨 불일치 시 대응**
+
+만약 metadata.json의 라벨과 GAME_RULE.md의 포즈 목록이 다른 경우:
+
+- **옵션 A (권장)**: metadata.json 기준으로 GAME_RULE.md 수정
+- **옵션 B**: GAME_RULE.md에 라벨 매핑 테이블 작성 (상세 내용은 GAME_RULE.md 참고)
+
+**Step 3-3: AI에게 코드 생성 요청**
+
 ```
 💬 AI에게 요청하는 방법:
 
-"GAME_RULE.md 파일을 읽고, 정의된 게임 규칙대로
+"my_model/metadata.json 파일의 labels 항목을 확인해서
+실제 클래스 라벨 이름을 파악해줘.
+
+그리고 GAME_RULE.md 파일을 읽고, 정의된 게임 규칙대로
 js/gameEngine.js와 js/main.js를 수정해줘.
+metadata.json의 정확한 라벨 이름을 사용해야 해.
+
+만약 GAME_RULE.md에 라벨 매핑 테이블이 있으면,
+코드에서는 metadata.json 라벨을 사용하고
+UI 표시는 매핑 테이블의 이름을 사용해줘.
+
 index.html과 css/style.css도 게임 UI를 추가해줘."
 ```
 
-AI가 GAME_RULE.md를 읽고 자동으로:
+AI가 metadata.json과 GAME_RULE.md를 읽고 자동으로:
+- ✅ metadata.json의 정확한 클래스 라벨 확인 및 사용
 - ✅ 게임 타이머 설정
 - ✅ 점수 체계 구현
 - ✅ 명령 발급 로직 작성
-- ✅ UI 업데이트 코드 생성
+- ✅ UI 업데이트 코드 생성 (라벨 매핑 적용)
 - ✅ 스타일 적용
 
 **📝 직접 코딩하는 경우**
@@ -242,10 +284,11 @@ AI가 GAME_RULE.md를 읽고 자동으로:
 async function init() {
   // ... 기존 초기화 코드 ...
 
-  // GAME_RULE.md에서 정의한 설정 적용
+  // ⚠️ 중요: metadata.json의 정확한 라벨 이름 사용
+  // metadata.json 확인: ["왼쪽", "오른쪽", "정면", "위", "아래"]
   startGameMode({
     timeLimit: 60,  // GAME_RULE.md의 "시간 설정" 참고
-    commands: ["왼쪽", "오른쪽", "위", "아래"]  // GAME_RULE.md의 "필요한 포즈" 참고
+    commands: ["왼쪽", "오른쪽", "위", "아래"]  // metadata.json의 labels와 일치해야 함
   });
 }
 ```
